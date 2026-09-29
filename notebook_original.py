@@ -1,5 +1,3 @@
-#prueba de conexion v1
-
 import marimo
 
 __generated_with = "0.25.0"

@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.25.0"
+__generated_with = "0.24.2"
 app = marimo.App(width="medium")
 
 
@@ -38,6 +38,14 @@ def _():
         root_mean_squared_error,
         train_test_split,
     )
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+ 
+    """)
+    return
 
 
 @app.cell
@@ -278,50 +286,6 @@ def _(
 
     - MAE de prueba: **{mean_absolute_error(y_test, _pred_test):,.2f} dólares**.
     - RMSE de prueba: **{root_mean_squared_error(y_test, _pred_test):,.2f} dólares**.
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    **Reporte final:** modelo elegido: Bosque aleatorio · MAE prueba: 33,697.54 · RMSE prueba: 50,964.58.
-
-    **Responde:** ¿cómo se compara el error de prueba con el de validación? ¿Por qué no tienen que coincidir? Si el error de prueba es mayor, ¿por qué cambiar repetidamente de modelo mirando prueba dejaría de ser una evaluación final?
-
-    **Respuesta:**
-
-    R: El MAE de prueba fue de **$33,697.54**, mientras que en validación fue de **$33,198.46**. Ambos valores son bastante cercanos, aunque no idénticos, porque se calcularon sobre grupos diferentes de observaciones. Es normal que existan pequeñas variaciones entre los resultados.
-
-    Si después de consultar prueba cambiáramos repetidamente de modelo para mejorar ese número, estaríamos utilizando la prueba como otro conjunto de validación. Dejaría de ser una medición independiente y el resultado final podría parecer mejor de lo que realmente sería al enfrentarse a datos nuevos.
-
-    **Explica el análisis completo** en 6–8 oraciones: carga y revisión, separación, exploración, creación de variables, preprocesamiento, entrenamiento, selección y evaluación final. En cada paso indica para qué sirve y qué conjunto utiliza.
-
-    **Explicación:**
-
-    -R: Primero se cargaron los datos y se revisó su estructura para detectar valores faltantes. Después se eliminaron los registros incompletos y se dividieron los datos en entrenamiento, validación y prueba, manteniendo la prueba apartada desde el principio. Con entrenamiento se exploraron las variables y se generaron nuevas características, como las habitaciones por hogar, aplicando la misma transformación a los conjuntos correspondientes. Posteriormente, el pipeline estandarizó las variables numéricas y convirtió la variable categórica en valores utilizables por los modelos, ajustándose únicamente con entrenamiento. Se entrenaron una regresión lineal, un árbol de decisión y un bosque aleatorio, y sus resultados se compararon mediante MAE y RMSE en validación. El bosque aleatorio fue seleccionado por presentar el menor error de validación, aunque mostró indicios de sobreajuste. Finalmente, se evaluó el modelo elegido con el conjunto de prueba y se obtuvo un error parecido al de validación, lo que sugiere un comportamiento relativamente consistente con datos no vistos.
-
-    ## Para una clase posterior · Ubicación
-
-    No es requisito de esta entrega. Propón una variable derivada de `latitude` y `longitude`: por ejemplo, distancia a un punto de referencia fijo. ¿Qué hipótesis representa? ¿Cómo compararías con y sin ella usando validación? Si defines el punto o agrupas zonas aprendiendo de los datos, ¿con qué conjunto debes hacerlo? ¿Una división aleatoria mide necesariamente el desempeño en
-    regiones geográficas completamente nuevas?
-
-    ## Criterios de evaluación
-
-    | Criterio | Puntos |
-    |---|---:|
-    | Separación correcta y explicación de entrenamiento, validación y prueba | 25 |
-    | Variable nueva, revisión de datos y explicación del preprocesamiento | 20 |
-    | Tercer modelo y comprobación del selector con botón | 20 |
-    | Comparación, interpretación y reporte final de métricas | 25 |
-    | Explicación del flujo completo y notebook guardado con respuestas | 10 |
-
-    **Antes de entregar:** comprueba los cuatro TODO, las respuestas, la tabla y
-    el reporte final. Los errores pequeños no dan más puntos por sí solos:
-    se evalúan el procedimiento y la interpretación.
-
-    **Consulta:** [formularios de marimo](https://docs.marimo.io/api/inputs/form/)
-    · [fuga de información y buenas prácticas](https://scikit-learn.org/stable/common_pitfalls.html).
     """)
     return
 

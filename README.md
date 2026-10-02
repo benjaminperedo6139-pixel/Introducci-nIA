@@ -164,9 +164,9 @@ El MAE de prueba (33,697.54) es muy cercano al de validación (33,198.46). No ti
 
 | Integrante | Rama | Archivos | Pull request | Commit | Revisó el PR de |
 |---|---|---|---|---|---|
-| @usuario1 | `Módulo-de-Dataset` | `config.py`, `data_loader.py`, `__init__.py`, `requirements.txt`, `.gitignore`, notebook original | #1 | `abc1234` | @usuario4 |
-| @usuario2 | `Modulo-DataT_T_V` | `split.py`, `features.py` | #2 | `abc1234` | @usuario1 |
-| @usuario3 | `Modulo_Preprocessing` | `preprocessing.py`, `models.py` | #3 | `abc1234` | @usuario2 |
-| @usuario4 | `train-evaluation` | `evaluation.py`, `train.py` | #4 | `abc1234` | @usuario3 |
+| @luispardave | `Módulo-de-Dataset` | `config.py`, `data_loader.py`, `__init__.py`, `requirements.txt`, `.gitignore`, notebook original | #4 | `96613f2` | @GiorgioCrown |
+| @josehuitron6148-svg | `Modulo-DataT_T_V` | `split.py`, `features.py` | #8 | `f88165c` | @GiorgioCrown |
+| @benjaminperedo6139-pixel | `Modulo_Preprocessing` | `preprocessing.py`, `models.py` | #6 | `2b9e1ee` | @luispardave |
+| @GiorgioCrown | `train-evaluation` | `evaluation.py`, `train.py` | #7, #9, #10 | `273dc0d`, `1fa6010` | @benjaminperedo6139-pixel |
 
 La integración se realizó en la rama `staging` y, una vez verificado el funcionamiento completo, se integró a `main`.

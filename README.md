@@ -1,29 +1,33 @@
-# Predicción del valor de viviendas en California
+# Predicción de Cierre en Menos de 24 Horas ($P_{24h}$) en Solicitudes NYC 311
 
-Proyecto modular de Machine Learning que reorganiza un notebook de marimo en un proyecto de Python, coordinado mediante GitHub.
+Proyecto modular de Machine Learning para predecir, al momento de registrar una solicitud de servicio ciudadano en **NYC 311**, si esta será cerrada en menos de 24 horas ($P_{24h}$), utilizando validación temporal y una arquitectura modular coordinada mediante GitHub.
 
-## Descripción del problema
+## 1. Objetivo y definición del problema
 
-El objetivo es predecir el **valor mediano de las viviendas** (`median_house_value`) de distritos de California a partir de características como ubicación, antigüedad de las casas, número de habitaciones, población, ingreso mediano y proximidad al océano. Se trata de un problema de **regresión**.
+El objetivo es construir un modelo de **clasificación binaria** capaz de estimar la probabilidad de que un reporte registrado en el sistema NYC 311 se resuelva dentro de las primeras 24 horas posteriores a su creación.
 
-## Conjunto de datos
+- **Variable objetivo ($P_{24h}$):**
+  - `1` (Positivo): La solicitud se cerró en un tiempo estrictamente menor a 24 horas ($\text{Closed Date} - \text{Created Date} < 24\text{ h}$).
+  - `0` (Negativo): La solicitud tardó 24 horas o más en cerrarse, o permanecía abierta al momento del corte.
 
-Se utiliza el dataset *California Housing*, disponible en el repositorio del curso:
+### Prevención de fuga de información (Data Leakage)
+Para simular una predicción real al instante del registro (`Created Date`):
+1. **Variables disponibles:** Únicamente se utilizan atributos conocidos al momento de levantar el reporte (agencia responsable, tipo de queja, descriptor, ubicación/distrito, canal de ingreso, hora y día de creación). Se excluyen variables posteriores al cierre como `Closed Date`, `Resolution Description` o `Status`.
+2. **Integridad temporal de las etiquetas:** En cada corte de entrenamiento, solo se incluyen solicitudes cuya etiqueta ya era observable antes de la fecha de inicio del conjunto de validación (es decir, solicitudes creadas al menos 24 horas antes del corte de validación), evitando conocer desenlaces del futuro.
 
-```
-https://raw.githubusercontent.com/IvTole/Intro_IA_ML_CUGDL/refs/heads/main/data/housing/housing.csv
-```
+## 2. Conjunto de datos
+
+Se utiliza el registro histórico de solicitudes de servicio **NYC 311 Service Requests** (NYC Open Data).
 
 | Característica | Detalle |
 |---|---|
-| Registros originales | 20,640 |
-| Registros eliminados por valores faltantes | 207 (1.00 %), todos en `total_bedrooms` |
-| Registros utilizados | 20,433 |
-| Variable objetivo | `median_house_value` |
-| Variables numéricas | `longitude`, `latitude`, `housing_median_age`, `total_rooms`, `total_bedrooms`, `population`, `households`, `median_income` |
-| Variable categórica | `ocean_proximity` |
+| Fuente | NYC Open Data — 311 Service Requests |
+| Periodo analizado | `[Fecha inicio] a [Fecha fin]` |
+| Registros utilizados | `[Total de filas]` |
+| Variable objetivo | `P_24h` (binaria: `0` / `1`) |
+| Proporción de clases | `[XX.X % clase 1 / XX.X % clase 0]` |
 
-## Integrantes
+## 3. Integrantes
 
 | Nombre | Usuario de GitHub |
 |---|---|
@@ -32,141 +36,54 @@ https://raw.githubusercontent.com/IvTole/Intro_IA_ML_CUGDL/refs/heads/main/data/
 | Benjamín Peredo Alonso | [benjaminperedo6139-pixel](https://github.com/benjaminperedo6139-pixel) |
 | Luis Angel Pardave Garcia | [luispardave](https://github.com/luispardave) |
 
-## Organización de los archivos
-
-```
-proyecto-housing/
+## 4. Organización del proyecto
+Introducci-nIA/
 ├── notebooks/
-│   └── notebook_original.py   # Notebook de marimo original (referencia)
+│   └── notebook_original.py   # Exploración inicial de referencia
 ├── src/
-│   ├── __init__.py            # Marca src/ como paquete de Python
-│   ├── config.py              # URL de datos, variable objetivo, columnas, semilla y proporciones
-│   ├── data_loader.py         # Carga, revisión, eliminación de nulos y separación X / y
-│   ├── split.py               # División en entrenamiento, validación y prueba con verificaciones
-│   ├── features.py            # Creación de variables nuevas y gráfica de exploración
-│   ├── preprocessing.py       # ColumnTransformer y Pipeline (escalado + one-hot)
-│   ├── models.py              # Modelos a comparar y modelo de referencia
-│   └── evaluation.py          # Métricas (MAE, RMSE) y selección del mejor modelo
-├── train.py                   # Archivo principal que coordina todo el flujo
-├── requirements.txt           # Dependencias
-├── .gitignore
-└── README.md
-```
+│   ├── init.py            # Marca src/ como paquete de Python
+│   ├── config.py              # Rutas, columnas, parámetros de cortes y semilla
+│   ├── data_loader.py         # Carga, limpieza y construcción del target P_24h
+│   ├── split.py               # División temporal (cortes deslizantes + prueba final)
+│   ├── features.py            # Ingeniería de variables temporales y de contexto
+│   ├── preprocessing.py       # ColumnTransformer y Pipeline (ajustado solo en train)
+│   ├── models.py              # Modelo de referencia y modelos con hiperparámetros
+│   └── evaluation.py          # Evaluación por cortes, selección por F1 y matriz de confusión
+├── figures/                   # Gráficas generadas automáticamente (exploración y matriz)
+├── train.py                   # Script principal que ejecuta todo el flujo de extremo a extremo
+├── requirements.txt           # Dependencias del proyecto
+└── README.md                  # Informe técnico final
 
-Al ejecutar el proyecto se crea automáticamente la carpeta `figures/` con la gráfica de exploración. Esta carpeta no se sube al repositorio.
+## 5. Instalación y ejecución
 
-## Instalación
+Requiere **Python 3.10 o superior**.
 
-Se requiere **Python 3.10 o superior** y conexión a internet.
-
-1. Clonar el repositorio:
-
+1. **Clonar el repositorio:**
    ```bash
-   git clone https://github.com/USUARIO/NOMBRE-REPO.git
-   cd NOMBRE-REPO
-   ```
-
-2. (Opcional) Crear y activar un entorno virtual:
-
-   ```bash
+   git clone [https://github.com/benjaminperedo6139-pixel/Introducci-nIA.git](https://github.com/benjaminperedo6139-pixel/Introducci-nIA.git)
+   cd Introducci-nIA
    python -m venv .venv
-   # Windows
-   .venv\Scripts\activate
-   # macOS / Linux
-   source .venv/bin/activate
-   ```
+# Windows: .venv\Scripts\activate | macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+Obtención de datos y ejecución completa:
+Los datos se descargan/cargan automáticamente mediante src/data_loader.py siguiendo la ruta configurada en src/config.py. Para ejecutar todo el experimento:
 
-3. Instalar las dependencias:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Obtención de los datos
-
-No es necesario descargar los datos manualmente. La URL del CSV está definida en `src/config.py` y `src/data_loader.py` lo lee directamente con `pandas` al ejecutar el proyecto.
-
-Si se prefiere trabajar sin conexión, se puede guardar el archivo en `data/housing.csv` y cambiar en `src/config.py`:
-
-```python
-DATA_URL = "data/housing.csv"
-```
-
-## Ejecución
-
-Desde la raíz del proyecto:
-
-```bash
 python train.py
-```
 
-Para verificar únicamente la división de los datos:
+## 6. Diseño de la validación temporal
+Dado que las solicitudes 311 presentan estacionalidad diaria/semanal y cambios operativos a lo largo del tiempo, una división aleatoria provocaría fuga de información del futuro hacia el pasado. Por ello se empleó una validación temporal mediante ventana deslizante (TimeSeriesSplit), reservando el último bloque cronológico como conjunto de prueba final intocable durante el desarrollo.
 
-```bash
-python -m src.split
-```
+## 7. Modelos e hiperparámetros evaluados 
+DummyClassifier: Predice la clase mayoritaria (strategy="most_frequent"). Sirve como línea base mínima para verificar que los modelos aprenden patrones reales.
 
-## Flujo del proyecto
+Regresión Logística: Modelo lineal interpretable y eficiente con codificación One-Hot. Limitación: no captura interacciones no lineales complejas entre agencia, hora y ubicación. Hiperparámetros probados.
 
-1. **Carga y revisión** (`data_loader.py`): se leen los datos, se revisan tipos y valores faltantes, y se eliminan los registros incompletos.
-2. **División** (`split.py`): los datos se separan en entrenamiento (60 %), validación (20 %) y prueba (20 %). El conjunto de prueba se aparta desde el inicio y solo se utiliza al final. Se verifican con `assert` que los conjuntos no se traslapen y que las proporciones sean correctas.
-3. **Creación de variables** (`features.py`): se agregan `rooms_per_household` y `bedrooms_per_household`. Como son operaciones fila por fila que no aprenden de los datos, se aplican a los tres conjuntos sin fuga de información. La exploración gráfica se hace solo con entrenamiento.
-4. **Preprocesamiento** (`preprocessing.py`): un `ColumnTransformer` estandariza las variables numéricas y codifica `ocean_proximity` con one-hot. Está integrado con el modelo en un `Pipeline`, por lo que se ajusta **únicamente con entrenamiento**.
-5. **Entrenamiento y comparación** (`models.py`, `evaluation.py`): se entrenan todos los modelos y se comparan con MAE y RMSE en entrenamiento y validación.
-6. **Selección** (`evaluation.py`): se elige automáticamente el modelo con menor MAE en **validación**.
-7. **Evaluación final** (`train.py`): el modelo seleccionado se evalúa una sola vez en **prueba**.
+Árbol de Decisión / Bosque Aleatorio (RandomForestClassifier): Captura reglas no lineales e interacciones entre tipo de reporte, agencia y horario sin requerir escalado estricto. Limitación: tiende a sobreajustar si no se limita la profundidad (max_depth). Hiperparámetros probados.
 
-## Modelos utilizados
 
-| Modelo | Configuración |
-|---|---|
-| Referencia (`DummyRegressor`) | Predice siempre la mediana de entrenamiento |
-| Regresión lineal | Valores por defecto |
-| Árbol de decisión | `max_depth=6`, `random_state=42` |
-| Bosque aleatorio | `n_estimators=100`, `random_state=42` |
+## 8. Métrica principal y resultadosJustificación de la métrica principal: F1-scoreSe eligió el F1-score promedio entre cortes de validación como métrica principal de selección porque equilibra Precision y Recall sobre la clase positiva ($P_{24h} = 1$). A diferencia del Accuracy, el F1-score evita que un modelo parezca exitoso simplemente prediciendo la clase mayoritaria cuando existe desbalance entre cierres rápidos y lentos.
 
-## Resultados
+## Significado de cada tipo de error en el contexto de NYC 311.
+Falso Positivo (FP — Predice cierre < 24h, pero tarda más): El sistema estima erróneamente una resolución rápida para una solicitud compleja. En la operación de 311, esto genera expectativas incumplidas en el ciudadano y puede provocar que el caso no reciba escalamiento oportuno.
 
-Comparación en entrenamiento y validación (valores en dólares):
-
-| Modelo | MAE train | RMSE train | MAE valid | RMSE valid |
-|---|---:|---:|---:|---:|
-| Referencia: mediana | 88,597.14 | 118,610.21 | 86,833.32 | 117,527.45 |
-| Regresión lineal | 49,195.14 | 67,474.04 | 50,383.50 | 71,859.24 |
-| Árbol de decisión | 45,788.84 | 64,745.58 | 48,081.18 | 68,629.32 |
-| **Bosque aleatorio** | 12,479.80 | 19,067.32 | **33,198.46** | **50,191.03** |
-
-**Modelo seleccionado:** Bosque aleatorio (menor MAE en validación).
-
-Evaluación final en prueba:
-
-| Métrica | Valor |
-|---|---:|
-| MAE | 33,697.54 dólares |
-| RMSE | 50,964.58 dólares |
-
-## Interpretación
-
-Los tres modelos superan claramente a la referencia, lo que indica que las variables sí aportan información para predecir el valor de las viviendas. El bosque aleatorio obtuvo el menor error en validación, aunque la gran diferencia entre su error de entrenamiento (MAE de 12,480) y de validación (MAE de 33,198) muestra **sobreajuste**: memoriza parte del conjunto de entrenamiento. Aun así, generaliza mejor que los otros modelos.
-
-El MAE de prueba (33,697.54) es muy cercano al de validación (33,198.46). No tienen que coincidir porque se calculan sobre observaciones diferentes, pero su cercanía sugiere que el desempeño es consistente con datos no vistos. La prueba se utilizó una sola vez: si se cambiara de modelo después de ver ese resultado, la prueba se convertiría en otro conjunto de validación y dejaría de ser una medición independiente.
-
-## Limitaciones y problemas conocidos
-
-- Se requiere **conexión a internet** para descargar los datos. Si el archivo cambia de ubicación en el repositorio del curso, el proyecto dejará de funcionar hasta actualizar `DATA_URL`.
-- Se eliminaron las filas con valores faltantes en lugar de imputarlas. Una imputación dentro del pipeline permitiría conservar esos registros.
-- El bosque aleatorio presenta sobreajuste. No se realizó ajuste de hiperparámetros (por ejemplo, limitar `max_depth` o `min_samples_leaf`), lo que podría reducirlo.
-- La división es aleatoria, por lo que no mide necesariamente el desempeño en regiones geográficas completamente nuevas.
-- El dataset tiene un tope en `median_house_value` (500,001), lo que limita la capacidad de los modelos para predecir valores altos.
-- La función `root_mean_squared_error` requiere `scikit-learn` 1.4 o superior.
-
-## Tabla de contribuciones
-
-| Integrante | Rama | Archivos | Pull request | Commit | Revisó el PR de |
-|---|---|---|---|---|---|
-| @luispardave | `Módulo-de-Dataset` | `config.py`, `data_loader.py`, `__init__.py`, `requirements.txt`, `.gitignore`, notebook original | #4 | `96613f2` | @GiorgioCrown |
-| @josehuitron6148-svg | `Modulo-DataT_T_V` | `split.py`, `features.py` | #8 | `f88165c` | @GiorgioCrown |
-| @benjaminperedo6139-pixel | `Modulo_Preprocessing` | `preprocessing.py`, `models.py` | #6 | `2b9e1ee` | @luispardave |
-| @GiorgioCrown | `train-evaluation` | `evaluation.py`, `train.py` | #7, #9, #10 | `273dc0d`, `1fa6010` | @benjaminperedo6139-pixel |
-
-La integración se realizó en la rama `staging` y, una vez verificado el funcionamiento completo, se integró a `main`.
+Falso Negativo (FN — Predice cierre >= 24h, pero se resuelve en < 24h): El modelo subestima la capacidad de respuesta de la agencia para un reporte que en realidad se atiende el mismo día. Operativamente tiene menor gravedad para el usuario final, pero distorsiona la planeación de carga de trabajo y asignación de cuadrillas de emergencia.
